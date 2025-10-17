@@ -1,0 +1,30 @@
+{
+  "userProfiles": [
+    {
+      "id": 1,
+      "name": "John Doe",
+      "avatar": "https://picsum.photos/200/200?random=1",
+      "description": "Software Engineer"
+    },
+    {
+      "id": 2,
+      "name": "Jane Smith",
+      "avatar": "https://picsum.photos/200/200?random=2",
+      "description": "UI/UX Designer"
+    }
+  ],
+  "galleryImages": [
+    "https://picsum.photos/800/600?random=10",
+    "https://picsum.photos/800/600?random=11",
+    "https://picsum.photos/800/600?random=12",
+    "https://picsum.photos/800/600?random=13",
+    "https://picsum.photos/800/600?random=14"
+  ],
+  "config": {
+    "version": "1.0.0",
+    "features": {
+      "predictiveLoading": true,
+      "caching": true
+    }
+  }
+}

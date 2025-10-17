@@ -27,6 +27,7 @@ import DashboardScreen from "./screens/DashboardScreen";
 import GalleryScreen from "./screens/GalleryScreen";
 import HomeScreen from "./screens/HomeScreen";
 import ProfileScreen from "./screens/ProfileScreen";
+import RealDemoScreen from "./screens/RealDemoScreen";
 import SettingsScreen from "./screens/SettingsScreen";
 
 // Import utilities
@@ -58,12 +59,20 @@ export default function App(): React.JSX.Element {
     setPreloadStatus((prev) => ({ ...prev, fonts: "loading" }));
 
     try {
-      await Font.loadAsync({
+      // REAL Font.loadAsync() implementation with actual fonts
+      const fontsToLoad = {
         ...Ionicons.font,
-        // Add custom fonts here if you have them
-        // 'CustomFont-Regular': require('./assets/fonts/CustomFont-Regular.ttf'),
-        // 'CustomFont-Bold': require('./assets/fonts/CustomFont-Bold.ttf'),
-      });
+        // Load actual Poppins fonts from assets
+        "Poppins-Regular": require("./assets/fonts/Poppins-Regular.ttf"),
+        "Poppins-Bold": require("./assets/fonts/Poppins-Bold.ttf"),
+        "Poppins-Medium": require("./assets/fonts/Poppins-Medium.ttf"),
+        "Poppins-SemiBold": require("./assets/fonts/Poppins-SemiBold.ttf"),
+        "Poppins-ExtraBold": require("./assets/fonts/Poppins-ExtraBold.ttf"),
+      };
+
+      console.log("🔤 Starting font preload:", Object.keys(fontsToLoad));
+      await Font.loadAsync(fontsToLoad);
+      console.log("✅ Fonts loaded successfully");
 
       const loadTime = performanceMonitor.endMeasurement(measurementId) || 0;
       addMetric("fontLoadTime", loadTime);
@@ -86,17 +95,31 @@ export default function App(): React.JSX.Element {
     setPreloadStatus((prev) => ({ ...prev, localAssets: "loading" }));
 
     try {
-      // Preload local images that are bundled with the app
-      // Replace with your actual local assets
+      // REAL Asset.loadAsync() implementation with actual local assets
       const localAssets: any[] = [
-        // require('./assets/images/icon.png'),
-        // require('./assets/images/splash-icon.png'),
-        // Add more local assets here
+        require("./assets/images/icon.png"),
+        require("./assets/images/splash-icon.png"),
+        require("./assets/images/adaptive-icon.png"),
+        require("./assets/images/mobile.png"),
+        require("./assets/images/onboardingSecond.png"),
+        require("./assets/images/onboardingThree.png"),
+        require("./assets/images/react-logo.png"),
+        require("./assets/data/sampleData.json"), // JSON data preload
       ];
 
-      if (localAssets.length > 0) {
-        await Asset.loadAsync(localAssets);
+      console.log(
+        "📁 Starting local asset preload:",
+        localAssets.length,
+        "assets"
+      );
+
+      // Load each asset and track individual progress
+      for (let i = 0; i < localAssets.length; i++) {
+        await Asset.loadAsync([localAssets[i]]);
+        console.log(`✅ Loaded asset ${i + 1}/${localAssets.length}`);
       }
+
+      console.log("✅ All local assets loaded successfully");
 
       const loadTime = performanceMonitor.endMeasurement(measurementId) || 0;
       addMetric("localAssetsLoadTime", loadTime);
@@ -149,12 +172,26 @@ export default function App(): React.JSX.Element {
     setPreloadStatus((prev) => ({ ...prev, criticalData: "loading" }));
 
     try {
-      // Load user preferences and app configuration
-      await Promise.all([
+      console.log("📊 Starting critical data preload...");
+
+      // REAL critical data loading with actual storage operations
+      const [userPrefs, appConfig, navHistory, sampleData] = await Promise.all([
         storage.loadUserPreferences(),
         storage.loadAppConfig(),
         storage.loadNavigationHistory(),
+        // Load local JSON data that was preloaded with Asset.loadAsync
+        import("./assets/data/sampleData.json"),
       ]);
+
+      console.log("✅ Critical data loaded:", {
+        userPreferences: Object.keys(userPrefs).length,
+        appConfig: appConfig.version,
+        navigationHistory: navHistory.length,
+        sampleData: sampleData.userProfiles?.length || 0,
+      });
+
+      // Store sample data in context for demo
+      // global.sampleData = sampleData;
 
       const loadTime = performanceMonitor.endMeasurement(measurementId) || 0;
       addMetric("criticalDataLoadTime", loadTime);
@@ -266,6 +303,9 @@ export default function App(): React.JSX.Element {
                 case "Profile":
                   iconName = focused ? "person" : "person-outline";
                   break;
+                case "Demo":
+                  iconName = focused ? "flask" : "flask-outline";
+                  break;
                 case "Dashboard":
                   iconName = focused ? "stats-chart" : "stats-chart-outline";
                   break;
@@ -306,6 +346,11 @@ export default function App(): React.JSX.Element {
             name="Profile"
             component={ProfileScreen}
             options={{ tabBarLabel: "Profile" }}
+          />
+          <Tab.Screen
+            name="Demo"
+            component={RealDemoScreen}
+            options={{ tabBarLabel: "Real Demo" }}
           />
           <Tab.Screen
             name="Dashboard"
