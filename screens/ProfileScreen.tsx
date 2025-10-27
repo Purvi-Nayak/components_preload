@@ -12,6 +12,7 @@ import {
   ViewStyle,
 } from "react-native";
 import { analytics } from "../utils/analytics";
+import { imageCache } from "../utils/imageCache";
 
 interface StatCardProps {
   icon: keyof typeof Ionicons.glyphMap;
@@ -27,14 +28,37 @@ export default function ProfileScreen(): React.JSX.Element {
     React.useCallback(() => {
       const startTime = Date.now();
 
-      // Simulate checking if assets were preloaded
-      setWasPreloaded(true);
+      // REAL cache checking - check if profile assets were actually preloaded
+      const profileAssets = [
+        "https://picsum.photos/300/300?random=10",
+        "https://picsum.photos/400/400?random=11",
+        "https://picsum.photos/500/500?random=12",
+      ];
+
+      // Check ACTUAL cache status using real imageCache
+      let cacheHits = 0;
+      profileAssets.forEach((uri) => {
+        if (imageCache.isCached(uri)) {
+          analytics.recordCacheHit();
+          cacheHits++;
+          console.log(`✅ Cache HIT for profile asset: ${uri}`);
+        } else {
+          analytics.recordCacheMiss();
+          console.log(`❌ Cache MISS for profile asset: ${uri}`);
+        }
+      });
+
+      setWasPreloaded(cacheHits > 0);
 
       const endTime = Date.now();
       const duration = endTime - startTime;
       setLoadTime(duration);
 
       analytics.recordScreenLoad("Profile", duration);
+
+      console.log(
+        `📊 Profile Screen - Load: ${duration}ms, Cache Hits: ${cacheHits}/${profileAssets.length}`
+      );
 
       return () => {};
     }, [])

@@ -280,12 +280,6 @@ export default function SettingsScreen(): React.JSX.Element {
           </Text>
         </View>
       </View>
-
-      <View style={styles.footer}>
-        <Text style={styles.footerText}>
-          Made with ❤️ using React Native & Expo
-        </Text>
-      </View>
     </ScrollView>
   );
 }
