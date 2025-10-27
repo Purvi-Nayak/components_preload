@@ -31,19 +31,19 @@ class PerformanceAnalytics {
 
   recordPreload(duration: number): void {
     this.metrics.preloadTimes.push(duration);
-    console.log(`📊 Analytics: Preload recorded - ${duration}ms`);
+    console.log(` Analytics: Preload recorded - ${duration}ms`);
   }
 
   recordCacheHit(): void {
     this.metrics.cacheHits++;
     this.metrics.totalRequests++;
-    console.log(`📊 Analytics: Cache hit recorded`);
+    console.log(` Analytics: Cache hit recorded`);
   }
 
   recordCacheMiss(): void {
     this.metrics.cacheMisses++;
     this.metrics.totalRequests++;
-    console.log(`📊 Analytics: Cache miss recorded`);
+    console.log(` Analytics: Cache miss recorded`);
   }
 
   recordScreenLoad(screenName: string, duration: number): void {
@@ -52,7 +52,7 @@ class PerformanceAnalytics {
     }
     this.metrics.screenLoadTimes[screenName].push(duration);
     console.log(
-      `📊 Analytics: Screen load recorded - ${screenName}: ${duration}ms`
+      ` Analytics: Screen load recorded - ${screenName}: ${duration}ms`
     );
   }
 

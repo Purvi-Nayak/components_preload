@@ -89,6 +89,7 @@ class StorageManager {
     }
   }
 
+
   async addNavigationEntry(
     screen: string,
     duration?: number

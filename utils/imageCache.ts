@@ -35,27 +35,27 @@ class ImageCache {
     // Check if already cached
     if (this.cache.has(uri)) {
       analytics.recordCacheHit();
-      console.log(`🖼️ ImageCache: Cache hit - ${uri}`);
+      console.log(` ImageCache: Cache hit - ${uri}`);
       return true;
     }
 
     // Check if already failed
     if (this.failedUrls.has(uri)) {
       analytics.recordCacheMiss();
-      console.log(`🖼️ ImageCache: Previously failed - ${uri}`);
+      console.log(` ImageCache: Previously failed - ${uri}`);
       return false;
     }
 
     // Check if already pending
     if (this.pendingUrls.has(uri)) {
-      console.log(`🖼️ ImageCache: Already pending - ${uri}`);
+      console.log(` ImageCache: Already pending - ${uri}`);
       return true;
     }
 
     this.pendingUrls.add(uri);
 
     try {
-      console.log(`🖼️ ImageCache: Starting preload - ${uri}`);
+      console.log(` ImageCache: Starting preload - ${uri}`);
       await Asset.fromURI(uri).downloadAsync();
 
       const loadTime = Date.now() - startTime;
@@ -76,14 +76,14 @@ class ImageCache {
 
       this.pendingUrls.delete(uri);
       console.log(
-        `🖼️ ImageCache: Successfully cached - ${uri} (${loadTime}ms)`
+        ` ImageCache: Successfully cached - ${uri} (${loadTime}ms)`
       );
       return true;
     } catch (error) {
       this.pendingUrls.delete(uri);
       this.failedUrls.add(uri);
       analytics.recordCacheMiss();
-      console.error(`🖼️ ImageCache: Failed to cache - ${uri}`, error);
+      console.error(` ImageCache: Failed to cache - ${uri}`, error);
       return false;
     }
   }
@@ -92,7 +92,7 @@ class ImageCache {
     uris: string[],
     priority: "high" | "medium" | "low" = "medium"
   ): Promise<boolean[]> {
-    console.log(`🖼️ ImageCache: Batch preloading ${uris.length} images`);
+    console.log(` ImageCache: Batch preloading ${uris.length} images`);
 
     const results = await Promise.allSettled(
       uris.map((uri) => this.preloadImage(uri, priority))
@@ -152,7 +152,7 @@ class ImageCache {
     for (let i = 0; i < toRemove && entries.length > 0; i++) {
       const [uri] = entries.shift()!;
       this.cache.delete(uri);
-      console.log(`🖼️ ImageCache: Cleaned up - ${uri}`);
+      console.log(` ImageCache: Cleaned up - ${uri}`);
     }
   }
 
@@ -160,12 +160,12 @@ class ImageCache {
     this.cache.clear();
     this.failedUrls.clear();
     this.pendingUrls.clear();
-    console.log(`🖼️ ImageCache: Cache cleared`);
+    console.log(` ImageCache: Cache cleared`);
   }
 
   clearFailed(): void {
     this.failedUrls.clear();
-    console.log(`🖼️ ImageCache: Failed URLs cleared`);
+    console.log(` ImageCache: Failed URLs cleared`);
   }
 
   setMaxCacheSize(size: number): void {

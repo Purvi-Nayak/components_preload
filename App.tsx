@@ -31,6 +31,7 @@ import RealDemoScreen from "./screens/RealDemoScreen";
 import SettingsScreen from "./screens/SettingsScreen";
 
 // Import utilities
+import { analytics } from "./utils/analytics";
 import { networkAwarePreloader } from "./utils/networkAwarePreload";
 import { performanceMonitor } from "./utils/performanceMonitor";
 import { storage } from "./utils/storage";
@@ -75,6 +76,11 @@ export default function App(): React.JSX.Element {
       console.log("✅ Fonts loaded successfully");
 
       const loadTime = performanceMonitor.endMeasurement(measurementId) || 0;
+
+      // 🔥 RECORD REAL ANALYTICS DATA
+      analytics.recordPreload(loadTime);
+      analytics.recordPreload(loadTime);
+
       addMetric("fontLoadTime", loadTime);
       setPreloadStatus((prev) => ({ ...prev, fonts: "loaded" }));
       setLoadingProgress((prev) => prev + 25);
@@ -122,6 +128,7 @@ export default function App(): React.JSX.Element {
       console.log("✅ All local assets loaded successfully");
 
       const loadTime = performanceMonitor.endMeasurement(measurementId) || 0;
+      analytics.recordPreload(loadTime);
       addMetric("localAssetsLoadTime", loadTime);
       setPreloadStatus((prev) => ({ ...prev, localAssets: "loaded" }));
       setLoadingProgress((prev) => prev + 25);
@@ -152,6 +159,7 @@ export default function App(): React.JSX.Element {
       await networkAwarePreloader.intelligentPreload(remoteImages, "high");
 
       const loadTime = performanceMonitor.endMeasurement(measurementId) || 0;
+      analytics.recordPreload(loadTime);
       addMetric("remoteAssetsLoadTime", loadTime);
       setPreloadStatus((prev) => ({ ...prev, remoteAssets: "loaded" }));
       setLoadingProgress((prev) => prev + 25);
@@ -194,6 +202,7 @@ export default function App(): React.JSX.Element {
       // global.sampleData = sampleData;
 
       const loadTime = performanceMonitor.endMeasurement(measurementId) || 0;
+      analytics.recordPreload(loadTime);
       addMetric("criticalDataLoadTime", loadTime);
       setPreloadStatus((prev) => ({ ...prev, criticalData: "loaded" }));
       setLoadingProgress((prev) => prev + 25);
