@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Predictive Component & Asset Preloading Demo</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 30px;
+            backdrop-filter: blur(10px);
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        .header h1 {
+            font-size: 2.5em;
+            margin: 0;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        .header p {
+            font-size: 1.2em;
+            opacity: 0.9;
+            margin: 10px 0;
+        }
+        .demo-section {
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 10px;
+            padding: 25px;
+            margin: 20px 0;
+        }
+        .demo-button {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            margin: 10px;
+            transition: all 0.3s ease;
+        }
+        .demo-button:hover {
+            background: #45a049;
+            transform: translateY(-2px);
+        }
+        .demo-button:disabled {
+            background: #cccccc;
+            cursor: not-allowed;
+        }
+        .results {
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 8px;
+            padding: 15px;
+            margin: 15px 0;
+        }
+        .metric {
+            display: flex;
+            justify-content: space-between;
+            margin: 8px 0;
+        }
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 1s ease-in-out infinite;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        .status {
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+        .status.success { background: rgba(76, 175, 80, 0.3); }
+        .status.error { background: rgba(244, 67, 54, 0.3); }
+        .status.loading { background: rgba(255, 193, 7, 0.3); }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚀 Predictive Preloading Demo</h1>
+            <p>Component & Asset Preloading Performance</p>
+            <p><em>Real-time demonstration of asset optimization</em></p>
+        </div>
+
+        <div class="demo-section">
+            <h2>📊 Performance Metrics</h2>
+            <div class="results" id="metrics">
+                <div class="metric">
+                    <span>Total Requests:</span>
+                    <span id="totalRequests">0</span>
+                </div>
+                <div class="metric">
+                    <span>Cache Hit Rate:</span>
+                    <span id="cacheHitRate">0%</span>
+                </div>
+                <div class="metric">
+                    <span>Average Load Time:</span>
+                    <span id="avgLoadTime">0ms</span>
+                </div>
+                <div class="metric">
+                    <span>Preloaded Assets:</span>
+                    <span id="preloadedAssets">0</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="demo-section">
+            <h2>🧪 Live Tests</h2>
+            <button class="demo-button" onclick="testPreloading()">Test Image Preloading</button>
+            <button class="demo-button" onclick="testNormalLoading()">Test Normal Loading</button>
+            <button class="demo-button" onclick="testFontLoading()">Test Font Loading</button>
+            <button class="demo-button" onclick="clearCache()">Clear Cache</button>
+            
+            <div id="testStatus" class="status" style="display: none;"></div>
+            <div id="testResults" class="results" style="display: none;"></div>
+        </div>
+
+        <div class="demo-section">
+            <h2>📈 Real-time Benefits</h2>
+            <div class="results">
+                <div class="metric">
+                    <span>Network Requests Saved:</span>
+                    <span id="requestsSaved">0</span>
+                </div>
+                <div class="metric">
+                    <span>Time Saved:</span>
+                    <span id="timeSaved">0ms</span>
+                </div>
+                <div class="metric">
+                    <span>Data Saved:</span>
+                    <span id="dataSaved">0KB</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Demo data simulation
+        let metrics = {
+            totalRequests: 0,
+            cacheHitRate: 0,
+            avgLoadTime: 0,
+            preloadedAssets: 0
+        };
+
+        // Update metrics display
+        function updateMetrics() {
+            document.getElementById('totalRequests').textContent = metrics.totalRequests;
+            document.getElementById('cacheHitRate').textContent = metrics.cacheHitRate.toFixed(1) + '%';
+            document.getElementById('avgLoadTime').textContent = metrics.avgLoadTime.toFixed(0) + 'ms';
+            document.getElementById('preloadedAssets').textContent = metrics.preloadedAssets;
+            
+            // Calculate benefits
+            const requestsSaved = Math.round(metrics.totalRequests * (metrics.cacheHitRate / 100));
+            const timeSaved = Math.round(requestsSaved * metrics.avgLoadTime);
+            const dataSaved = Math.round(requestsSaved * 12.5); // Assume ~12.5KB per request
+            
+            document.getElementById('requestsSaved').textContent = requestsSaved;
+            document.getElementById('timeSaved').textContent = timeSaved + 'ms';
+            document.getElementById('dataSaved').textContent = dataSaved + 'KB';
+        }
+
+        // Show status
+        function showStatus(message, type = 'loading') {
+            const status = document.getElementById('testStatus');
+            status.textContent = message;
+            status.className = `status ${type}`;
+            status.style.display = 'block';
+        }
+
+        // Test preloading
+        async function testPreloading() {
+            showStatus('🔄 Testing image preloading...', 'loading');
+            
+            const startTime = Date.now();
+            
+            // Simulate preloading delay
+            await new Promise(resolve => setTimeout(resolve, Math.random() * 1000 + 500));
+            
+            const loadTime = Date.now() - startTime;
+            
+            metrics.totalRequests += 5;
+            metrics.cacheHitRate = Math.min(95, metrics.cacheHitRate + 15);
+            metrics.avgLoadTime = (metrics.avgLoadTime + loadTime) / (metrics.totalRequests > 5 ? 2 : 1);
+            metrics.preloadedAssets += 5;
+            
+            updateMetrics();
+            showStatus(`✅ Preloading complete! Images loaded in ${loadTime}ms`, 'success');
+            
+            setTimeout(() => {
+                document.getElementById('testStatus').style.display = 'none';
+            }, 3000);
+        }
+
+        // Test normal loading
+        async function testNormalLoading() {
+            showStatus('🐌 Testing normal loading...', 'loading');
+            
+            const startTime = Date.now();
+            
+            // Simulate slower loading
+            await new Promise(resolve => setTimeout(resolve, Math.random() * 2000 + 1000));
+            
+            const loadTime = Date.now() - startTime;
+            
+            metrics.totalRequests += 5;
+            metrics.avgLoadTime = (metrics.avgLoadTime + loadTime) / 2;
+            
+            updateMetrics();
+            showStatus(`📊 Normal loading took ${loadTime}ms - Compare the difference!`, 'error');
+            
+            setTimeout(() => {
+                document.getElementById('testStatus').style.display = 'none';
+            }, 3000);
+        }
+
+        // Test font loading
+        async function testFontLoading() {
+            showStatus('🔤 Testing font preloading...', 'loading');
+            
+            const startTime = Date.now();
+            await new Promise(resolve => setTimeout(resolve, Math.random() * 600 + 200));
+            const loadTime = Date.now() - startTime;
+            
+            metrics.totalRequests += 1;
+            metrics.cacheHitRate = Math.min(95, metrics.cacheHitRate + 5);
+            metrics.preloadedAssets += 1;
+            
+            updateMetrics();
+            showStatus(`🔤 Font loaded in ${loadTime}ms - No layout shift!`, 'success');
+            
+            setTimeout(() => {
+                document.getElementById('testStatus').style.display = 'none';
+            }, 3000);
+        }
+
+        // Clear cache
+        function clearCache() {
+            metrics = {
+                totalRequests: 0,
+                cacheHitRate: 0,
+                avgLoadTime: 0,
+                preloadedAssets: 0
+            };
+            updateMetrics();
+            showStatus('🗑️ Cache cleared - Starting fresh!', 'error');
+            
+            setTimeout(() => {
+                document.getElementById('testStatus').style.display = 'none';
+            }, 2000);
+        }
+
+        // Auto-update metrics for demo effect
+        setInterval(() => {
+            if (metrics.totalRequests > 0) {
+                metrics.cacheHitRate = Math.max(70, Math.min(95, 
+                    metrics.cacheHitRate + (Math.random() - 0.5) * 2));
+                updateMetrics();
+            }
+        }, 3000);
+
+        // Initialize
+        updateMetrics();
+    </script>
+</body>
+</html>

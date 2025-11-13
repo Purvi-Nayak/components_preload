@@ -2,6 +2,12 @@ import { Ionicons } from "@expo/vector-icons";
 import { useFocusEffect } from "@react-navigation/native";
 import { Asset } from "expo-asset";
 import React, { useEffect, useRef, useState } from "react";
+
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+
+// const insets = useSafeAreaInsets();
+
+// paddingTop: insets.top,
 import {
   Image,
   ImageStyle,
@@ -35,6 +41,7 @@ export default function GalleryScreen(): React.JSX.Element {
   const [isPreloading, setIsPreloading] = useState<boolean>(false);
   const [metrics, setMetrics] = useState<Metrics>({});
   const navigationHistoryRef = useRef<string[]>([]);
+  const insets = useSafeAreaInsets();
 
   // Gallery images
   const galleryData: GalleryItem[] = [
@@ -204,7 +211,7 @@ export default function GalleryScreen(): React.JSX.Element {
   }, []);
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { paddingTop: insets.top }]}>
       <View style={styles.header}>
         <Ionicons name="images" size={30} color="#2196F3" />
         <Text style={styles.title}>Gallery with Predictive Loading</Text>

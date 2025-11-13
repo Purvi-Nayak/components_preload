@@ -1,5 +1,6 @@
 import { Ionicons } from "@expo/vector-icons";
-import React, { useContext, useMemo, useState } from "react";
+import * as React from "react";
+import { useContext, useMemo, useState } from "react";
 import {
   ScrollView,
   StyleSheet,
@@ -9,6 +10,7 @@ import {
   ViewStyle,
 } from "react-native";
 import { PerformanceContext } from "../contexts/PerformanceContext";
+import { useMobileResponsive } from "../hooks/useMobileResponsive";
 import { analytics } from "../utils/analytics";
 
 interface DashboardMetrics {
@@ -35,6 +37,9 @@ export default function DashboardScreen(): React.JSX.Element {
   // 🔥 USING ONLY REAL PERFORMANCE DATA - NO ARTIFICIAL NUMBERS
   const { metrics: realMetrics } = useContext(PerformanceContext);
   const analyticsReport = analytics.getReport();
+
+  // 📱 RESPONSIVE HOOK - Device-aware layouts and scaling
+  const responsive = useMobileResponsive();
 
   // REAL-ONLY METRICS - No random numbers, no artificial data
   const [metrics] = useState<DashboardMetrics>(() => {
@@ -64,7 +69,7 @@ export default function DashboardScreen(): React.JSX.Element {
   }) => (
     <View style={styles.metricCard}>
       <View style={[styles.metricIcon, { backgroundColor: color + "20" }]}>
-        <Ionicons name={icon} size={32} color={color} />
+        <Ionicons name={icon} size={responsive.scale.icon(32)} color={color} />
       </View>
       <Text style={styles.metricValue}>{value}</Text>
       <Text style={styles.metricLabel}>{label}</Text>
@@ -139,10 +144,225 @@ export default function DashboardScreen(): React.JSX.Element {
     </View>
   );
 
+  // 📱 RESPONSIVE STYLES - Generated based on device type and scaling
+  const getResponsiveStyles = () => {
+    const { scale, layout, device, safe } = responsive;
+    
+    return StyleSheet.create({
+      container: {
+        flex: 1,
+        backgroundColor: "#F5F5F5",
+        paddingTop: safe.top, // Safe area handling
+      } as ViewStyle,
+      header: {
+        backgroundColor: "#fff",
+        padding: scale.space(20),
+        flexDirection: "row",
+        alignItems: "center",
+        borderBottomWidth: 1,
+        borderBottomColor: "#E0E0E0",
+      } as ViewStyle,
+      title: {
+        fontSize: scale.font(20),
+        fontWeight: "bold",
+        color: "#333",
+        marginLeft: scale.space(10),
+      } as TextStyle,
+      dashboardGrid: {
+        flexDirection: "row",
+        flexWrap: "wrap",
+        padding: layout.contentPadding,
+        justifyContent: device.isLandscape ? "space-around" : "space-between",
+        gap: layout.gridGap, // Modern gap property for better spacing
+      } as ViewStyle,
+      metricCard: {
+        backgroundColor: "#fff",
+        width: device.isLandscape 
+          ? `${Math.floor(100 / Math.min(layout.columns, 4))}%`  // Max 4 columns in landscape
+          : "48%", // 2 columns in portrait for phones
+        padding: layout.cardPadding,
+        borderRadius: scale.radius(10),
+        alignItems: "center",
+        marginBottom: layout.gridGap,
+        elevation: 2,
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 4,
+      } as ViewStyle,
+      metricIcon: {
+        width: scale.icon(60),
+        height: scale.icon(60),
+        borderRadius: scale.icon(30),
+        justifyContent: "center",
+        alignItems: "center",
+        marginBottom: scale.space(10),
+      } as ViewStyle,
+      metricValue: {
+        fontSize: scale.font(18),
+        fontWeight: "bold",
+        color: "#333",
+        marginBottom: scale.space(5),
+      } as TextStyle,
+      metricLabel: {
+        fontSize: scale.font(12),
+        color: "#666",
+        textAlign: "center",
+      } as TextStyle,
+      chartSection: {
+        margin: layout.contentPadding,
+        backgroundColor: "#fff",
+        borderRadius: scale.radius(10),
+        padding: scale.space(20),
+        elevation: 2,
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 4,
+      } as ViewStyle,
+      chartPlaceholder: {
+        alignItems: "center",
+        paddingVertical: scale.space(40),
+      } as ViewStyle,
+      chartText: {
+        fontSize: scale.font(16),
+        color: "#666",
+        marginTop: scale.space(10),
+        fontWeight: "500",
+      } as TextStyle,
+      chartSubtext: {
+        fontSize: scale.font(12),
+        color: "#999",
+        marginTop: scale.space(5),
+        textAlign: "center",
+      } as TextStyle,
+      summarySection: {
+        margin: layout.contentPadding,
+        backgroundColor: "#fff",
+        borderRadius: scale.radius(10),
+        padding: scale.space(15),
+        elevation: 2,
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 4,
+      } as ViewStyle,
+      summaryCard: {
+        marginTop: scale.space(10),
+      } as ViewStyle,
+      summaryRow: {
+        flexDirection: "row",
+        justifyContent: "space-between",
+        alignItems: "center",
+        paddingVertical: scale.space(8),
+        borderBottomWidth: 1,
+        borderBottomColor: "#F0F0F0",
+      } as ViewStyle,
+      summaryLabel: {
+        fontSize: scale.font(14),
+        color: "#666",
+        flex: 1, // Responsive text wrapping
+      } as TextStyle,
+      summaryValue: {
+        fontSize: scale.font(14),
+        fontWeight: "bold",
+        color: "#333",
+        textAlign: "right",
+      } as TextStyle,
+      sectionTitle: {
+        fontSize: scale.font(18),
+        fontWeight: "bold",
+        color: "#333",
+        marginBottom: scale.space(10),
+      } as TextStyle,
+      tipsSection: {
+        margin: layout.contentPadding,
+        paddingBottom: safe.bottom, // Safe area at bottom
+      } as ViewStyle,
+      tipCard: {
+        flexDirection: "row",
+        backgroundColor: "#fff",
+        padding: scale.space(15),
+        borderRadius: scale.radius(10),
+        marginBottom: scale.space(10),
+        elevation: 2,
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 4,
+      } as ViewStyle,
+      tipContent: {
+        flex: 1,
+        marginLeft: scale.space(15),
+      } as ViewStyle,
+      tipText: {
+        fontSize: scale.font(14),
+        color: "#333",
+        marginBottom: scale.space(8),
+      } as TextStyle,
+      impactBadge: {
+        alignSelf: "flex-start",
+        backgroundColor: "#E0E0E0",
+        paddingHorizontal: scale.space(8),
+        paddingVertical: scale.space(2),
+        borderRadius: scale.radius(12),
+      } as ViewStyle,
+      highImpact: {
+        backgroundColor: "#FFCDD2",
+      } as ViewStyle,
+      impactText: {
+        fontSize: scale.font(10),
+        fontWeight: "bold",
+        color: "#666",
+      } as TextStyle,
+      metricsDetailSection: {
+        margin: layout.contentPadding,
+        backgroundColor: "#fff",
+        borderRadius: scale.radius(10),
+        padding: scale.space(15),
+        elevation: 2,
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 4,
+      } as ViewStyle,
+      metricsDetail: {
+        flexDirection: "row",
+        justifyContent: "space-between",
+        alignItems: "center",
+        paddingVertical: scale.space(8),
+        borderBottomWidth: 1,
+        borderBottomColor: "#F0F0F0",
+      } as ViewStyle,
+      metricDetailLabel: {
+        fontSize: scale.font(14),
+        color: "#666",
+        flex: 1,
+      } as TextStyle,
+      metricDetailValue: {
+        fontSize: scale.font(14),
+        fontWeight: "bold",
+        color: "#2196F3",
+        textAlign: "right",
+      } as TextStyle,
+      tipIcon: {
+        fontSize: scale.font(24),
+        minWidth: scale.space(30),
+        textAlign: "center",
+      } as TextStyle,
+    });
+  };
+
+  const styles = getResponsiveStyles();
+
   return (
     <ScrollView style={styles.container}>
       <View style={styles.header}>
-        <Ionicons name="stats-chart" size={30} color="#2196F3" />
+        <Ionicons
+          name="stats-chart"
+          size={responsive.scale.icon(30)}
+          color="#2196F3"
+        />
         <Text style={styles.title}>Performance Dashboard</Text>
       </View>
 
@@ -176,7 +396,11 @@ export default function DashboardScreen(): React.JSX.Element {
       <View style={styles.chartSection}>
         <Text style={styles.sectionTitle}>Cache Performance</Text>
         <View style={styles.chartPlaceholder}>
-          <Ionicons name="bar-chart" size={80} color="#E0E0E0" />
+          <Ionicons
+            name="bar-chart"
+            size={responsive.scale.icon(80)}
+            color="#E0E0E0"
+          />
           <Text style={styles.chartText}>Performance chart visualization</Text>
           <Text style={styles.chartSubtext}>
             Shows cache hit rates, load times, and optimization trends over time
@@ -271,198 +495,3 @@ export default function DashboardScreen(): React.JSX.Element {
     </ScrollView>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#F5F5F5",
-  } as ViewStyle,
-  header: {
-    backgroundColor: "#fff",
-    padding: 20,
-    flexDirection: "row",
-    alignItems: "center",
-    borderBottomWidth: 1,
-    borderBottomColor: "#E0E0E0",
-  } as ViewStyle,
-  title: {
-    fontSize: 20,
-    fontWeight: "bold",
-    color: "#333",
-    marginLeft: 10,
-  } as TextStyle,
-  dashboardGrid: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    padding: 15,
-    justifyContent: "space-between",
-  } as ViewStyle,
-  metricCard: {
-    backgroundColor: "#fff",
-    width: "48%",
-    padding: 15,
-    borderRadius: 10,
-    alignItems: "center",
-    marginBottom: 15,
-    elevation: 2,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-  } as ViewStyle,
-  metricIcon: {
-    width: 60,
-    height: 60,
-    borderRadius: 30,
-    justifyContent: "center",
-    alignItems: "center",
-    marginBottom: 10,
-  } as ViewStyle,
-  metricValue: {
-    fontSize: 18,
-    fontWeight: "bold",
-    color: "#333",
-    marginBottom: 5,
-  } as TextStyle,
-  metricLabel: {
-    fontSize: 12,
-    color: "#666",
-    textAlign: "center",
-  } as TextStyle,
-  chartSection: {
-    margin: 15,
-    backgroundColor: "#fff",
-    borderRadius: 10,
-    padding: 20,
-    elevation: 2,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-  } as ViewStyle,
-  chartPlaceholder: {
-    alignItems: "center",
-    paddingVertical: 40,
-  } as ViewStyle,
-  chartText: {
-    fontSize: 16,
-    color: "#666",
-    marginTop: 10,
-    fontWeight: "500",
-  } as TextStyle,
-  chartSubtext: {
-    fontSize: 12,
-    color: "#999",
-    marginTop: 5,
-    textAlign: "center",
-  } as TextStyle,
-  summarySection: {
-    margin: 15,
-    backgroundColor: "#fff",
-    borderRadius: 10,
-    padding: 15,
-    elevation: 2,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-  } as ViewStyle,
-  summaryCard: {
-    marginTop: 10,
-  } as ViewStyle,
-  summaryRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    paddingVertical: 8,
-    borderBottomWidth: 1,
-    borderBottomColor: "#F0F0F0",
-  } as ViewStyle,
-  summaryLabel: {
-    fontSize: 14,
-    color: "#666",
-  } as TextStyle,
-  summaryValue: {
-    fontSize: 14,
-    fontWeight: "bold",
-    color: "#333",
-  } as TextStyle,
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: "bold",
-    color: "#333",
-    marginBottom: 10,
-  } as TextStyle,
-  tipsSection: {
-    margin: 15,
-  } as ViewStyle,
-  tipCard: {
-    flexDirection: "row",
-    backgroundColor: "#fff",
-    padding: 15,
-    borderRadius: 10,
-    marginBottom: 10,
-    elevation: 2,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-  } as ViewStyle,
-  tipContent: {
-    flex: 1,
-    marginLeft: 15,
-  } as ViewStyle,
-  tipText: {
-    fontSize: 14,
-    color: "#333",
-    marginBottom: 8,
-  } as TextStyle,
-  impactBadge: {
-    alignSelf: "flex-start",
-    backgroundColor: "#E0E0E0",
-    paddingHorizontal: 8,
-    paddingVertical: 2,
-    borderRadius: 12,
-  } as ViewStyle,
-  highImpact: {
-    backgroundColor: "#FFCDD2",
-  } as ViewStyle,
-  impactText: {
-    fontSize: 10,
-    fontWeight: "bold",
-    color: "#666",
-  } as TextStyle,
-  metricsDetailSection: {
-    margin: 15,
-    backgroundColor: "#fff",
-    borderRadius: 10,
-    padding: 15,
-    elevation: 2,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-  } as ViewStyle,
-  metricsDetail: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    paddingVertical: 8,
-    borderBottomWidth: 1,
-    borderBottomColor: "#F0F0F0",
-  } as ViewStyle,
-  metricDetailLabel: {
-    fontSize: 14,
-    color: "#666",
-  } as TextStyle,
-  metricDetailValue: {
-    fontSize: 14,
-    fontWeight: "bold",
-    color: "#2196F3",
-  } as TextStyle,
-  tipIcon: {
-    fontSize: 24,
-    minWidth: 30,
-    textAlign: "center",
-  } as TextStyle,
-});
