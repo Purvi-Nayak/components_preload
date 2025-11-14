@@ -217,7 +217,7 @@ export default function GalleryScreen(): React.JSX.Element {
         <Text style={styles.title}>Gallery with Predictive Loading</Text>
       </View>
 
-      <View style={styles.statusBar}>
+      <View style={styles.loadingStatusBar}>
         <View style={styles.statusItem}>
           <Ionicons
             name={isPreloading ? "cloud-download" : "checkmark-circle"}
@@ -315,7 +315,7 @@ const styles = StyleSheet.create({
     color: "#333",
     marginLeft: 10,
   } as TextStyle,
-  statusBar: {
+  loadingStatusBar: {
     backgroundColor: "#fff",
     padding: 15,
     flexDirection: "row",

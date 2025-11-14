@@ -6,7 +6,6 @@ import * as Font from "expo-font";
 import React, { useCallback, useEffect, useState } from "react";
 import {
   ActivityIndicator,
-  StatusBar,
   StyleSheet,
   Text,
   TextStyle,
@@ -21,6 +20,10 @@ import {
   PreloadStatus,
   PreloadStatusState,
 } from "./contexts/PerformanceContext";
+import { ThemeProvider } from "./contexts/ThemeContext";
+
+// Import components
+import ThemedStatusBar from "./components/ThemedStatusBar";
 
 // Import screens
 import DashboardScreen from "./screens/DashboardScreen";
@@ -254,126 +257,135 @@ export default function App(): React.JSX.Element {
   // Loading screen
   if (!isReady) {
     return (
-      <View style={styles.loadingContainer}>
-        <StatusBar barStyle="light-content" backgroundColor="#2196F3" />
+      <ThemeProvider>
+        <View style={styles.loadingContainer}>
+          <ThemedStatusBar />
 
-        <View style={styles.logoContainer}>
-          <Ionicons name="flash" size={80} color="#2196F3" />
-          <Text style={styles.appName}>Performance Demo</Text>
-          <Text style={styles.appSubtitle}>Predictive Asset Preloading</Text>
-        </View>
+          <View style={styles.logoContainer}>
+            <Ionicons name="flash" size={80} color="#2196F3" />
+            <Text style={styles.appName}>Performance Demo</Text>
+            <Text style={styles.appSubtitle}>Predictive Asset Preloading</Text>
+          </View>
 
-        <View style={styles.progressContainer}>
-          <View style={styles.progressBar}>
-            <View
-              style={[styles.progressFill, { width: `${loadingProgress}%` }]}
+          <View style={styles.progressContainer}>
+            <View style={styles.progressBar}>
+              <View
+                style={[styles.progressFill, { width: `${loadingProgress}%` }]}
+              />
+            </View>
+            <Text style={styles.progressText}>{loadingProgress}% loaded</Text>
+          </View>
+
+          <View style={styles.statusContainer}>
+            <StatusItem label="Fonts" status={preloadStatus.fonts} />
+            <StatusItem
+              label="Local Assets"
+              status={preloadStatus.localAssets}
+            />
+            <StatusItem
+              label="Remote Assets"
+              status={preloadStatus.remoteAssets}
+            />
+            <StatusItem
+              label="Critical Data"
+              status={preloadStatus.criticalData}
             />
           </View>
-          <Text style={styles.progressText}>{loadingProgress}% loaded</Text>
-        </View>
 
-        <View style={styles.statusContainer}>
-          <StatusItem label="Fonts" status={preloadStatus.fonts} />
-          <StatusItem label="Local Assets" status={preloadStatus.localAssets} />
-          <StatusItem
-            label="Remote Assets"
-            status={preloadStatus.remoteAssets}
-          />
-          <StatusItem
-            label="Critical Data"
-            status={preloadStatus.criticalData}
-          />
+          <Text style={styles.loadingTip}>
+            🔥 Pro tip: All these assets are being preloaded for instant access!
+          </Text>
         </View>
-
-        <Text style={styles.loadingTip}>
-          🔥 Pro tip: All these assets are being preloaded for instant access!
-        </Text>
-      </View>
+      </ThemeProvider>
     );
   }
 
   // Main app
   return (
-    <PerformanceContext.Provider value={{ addMetric, metrics, preloadStatus }}>
-      <NavigationContainer>
-        <StatusBar barStyle="dark-content" backgroundColor="#fff" />
-        <Tab.Navigator
-          screenOptions={({ route }) => ({
-            tabBarIcon: ({ focused, color, size }) => {
-              let iconName: keyof typeof Ionicons.glyphMap;
+    <ThemeProvider>
+      <PerformanceContext.Provider
+        value={{ addMetric, metrics, preloadStatus }}
+      >
+        <NavigationContainer>
+          <ThemedStatusBar />
+          <Tab.Navigator
+            screenOptions={({ route }) => ({
+              tabBarIcon: ({ focused, color, size }) => {
+                let iconName: keyof typeof Ionicons.glyphMap;
 
-              switch (route.name) {
-                case "Home":
-                  iconName = focused ? "home" : "home-outline";
-                  break;
-                case "Gallery":
-                  iconName = focused ? "images" : "images-outline";
-                  break;
-                case "Profile":
-                  iconName = focused ? "person" : "person-outline";
-                  break;
-                case "Demo":
-                  iconName = focused ? "flask" : "flask-outline";
-                  break;
-                case "Dashboard":
-                  iconName = focused ? "stats-chart" : "stats-chart-outline";
-                  break;
-                case "Settings":
-                  iconName = focused ? "settings" : "settings-outline";
-                  break;
-                default:
-                  iconName = "home";
-              }
+                switch (route.name) {
+                  case "Home":
+                    iconName = focused ? "home" : "home-outline";
+                    break;
+                  case "Gallery":
+                    iconName = focused ? "images" : "images-outline";
+                    break;
+                  case "Profile":
+                    iconName = focused ? "person" : "person-outline";
+                    break;
+                  case "Demo":
+                    iconName = focused ? "flask" : "flask-outline";
+                    break;
+                  case "Dashboard":
+                    iconName = focused ? "stats-chart" : "stats-chart-outline";
+                    break;
+                  case "Settings":
+                    iconName = focused ? "settings" : "settings-outline";
+                    break;
+                  default:
+                    iconName = "home";
+                }
 
-              return <Ionicons name={iconName} size={size} color={color} />;
-            },
-            tabBarActiveTintColor: "#2196F3",
-            tabBarInactiveTintColor: "gray",
-            headerShown: false,
-            tabBarStyle: {
-              elevation: 8,
-              shadowOffset: { width: 0, height: -2 },
-              shadowOpacity: 0.1,
-              shadowRadius: 4,
-              backgroundColor: "#fff",
-              borderTopWidth: 1,
-              borderTopColor: "#E0E0E0",
-            },
-          })}
-        >
-          <Tab.Screen
-            name="Home"
-            component={HomeScreen}
-            options={{ tabBarLabel: "Home" }}
-          />
-          <Tab.Screen
-            name="Gallery"
-            component={GalleryScreen}
-            options={{ tabBarLabel: "Gallery" }}
-          />
-          <Tab.Screen
-            name="Profile"
-            component={ProfileScreen}
-            options={{ tabBarLabel: "Profile" }}
-          />
-          <Tab.Screen
-            name="Demo"
-            component={RealDemoScreen}
-            options={{ tabBarLabel: "Real Demo" }}
-          />
-          <Tab.Screen
-            name="Dashboard"
-            component={DashboardScreen}
-            options={{ tabBarLabel: "Analytics" }}
-          />
-          <Tab.Screen
-            name="Settings"
-            component={SettingsScreen}
-            options={{ tabBarLabel: "Settings" }}
-          />
-        </Tab.Navigator>
-      </NavigationContainer>
-    </PerformanceContext.Provider>
+                return <Ionicons name={iconName} size={size} color={color} />;
+              },
+              tabBarActiveTintColor: "#2196F3",
+              tabBarInactiveTintColor: "gray",
+              headerShown: false,
+              tabBarStyle: {
+                elevation: 8,
+                shadowOffset: { width: 0, height: -2 },
+                shadowOpacity: 0.1,
+                shadowRadius: 4,
+                backgroundColor: "#fff",
+                borderTopWidth: 1,
+                borderTopColor: "#E0E0E0",
+              },
+            })}
+          >
+            <Tab.Screen
+              name="Home"
+              component={HomeScreen}
+              options={{ tabBarLabel: "Home" }}
+            />
+            <Tab.Screen
+              name="Gallery"
+              component={GalleryScreen}
+              options={{ tabBarLabel: "Gallery" }}
+            />
+            <Tab.Screen
+              name="Profile"
+              component={ProfileScreen}
+              options={{ tabBarLabel: "Profile" }}
+            />
+            <Tab.Screen
+              name="Demo"
+              component={RealDemoScreen}
+              options={{ tabBarLabel: "Real Demo" }}
+            />
+            <Tab.Screen
+              name="Dashboard"
+              component={DashboardScreen}
+              options={{ tabBarLabel: "Analytics" }}
+            />
+            <Tab.Screen
+              name="Settings"
+              component={SettingsScreen}
+              options={{ tabBarLabel: "Settings" }}
+            />
+          </Tab.Navigator>
+        </NavigationContainer>
+      </PerformanceContext.Provider>
+    </ThemeProvider>
   );
 }
 

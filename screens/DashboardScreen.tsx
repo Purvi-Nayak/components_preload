@@ -10,7 +10,7 @@ import {
   ViewStyle,
 } from "react-native";
 import { PerformanceContext } from "../contexts/PerformanceContext";
-import { useMobileResponsive } from "../hooks/useMobileResponsive";
+import { usePixelPerfect } from "../hooks/useMobileResponsive";
 import { analytics } from "../utils/analytics";
 
 interface DashboardMetrics {
@@ -33,13 +33,50 @@ interface TipCardProps {
   impact: string;
 }
 
+// Clean unified styles interface - no separate ViewStyle/TextStyle interfaces needed
+interface DashboardStyles {
+  // View Styles
+  container: ViewStyle;
+  header: ViewStyle;
+  dashboardGrid: ViewStyle;
+  metricCard: ViewStyle;
+  metricIcon: ViewStyle;
+  chartSection: ViewStyle;
+  chartPlaceholder: ViewStyle;
+  summarySection: ViewStyle;
+  summaryCard: ViewStyle;
+  summaryRow: ViewStyle;
+  tipsSection: ViewStyle;
+  tipCard: ViewStyle;
+  tipContent: ViewStyle;
+  impactBadge: ViewStyle;
+  highImpact: ViewStyle;
+  metricsDetailSection: ViewStyle;
+  metricsDetail: ViewStyle;
+
+  // Text Styles
+  title: TextStyle;
+  metricValue: TextStyle;
+  metricLabel: TextStyle;
+  chartText: TextStyle;
+  chartSubtext: TextStyle;
+  summaryLabel: TextStyle;
+  summaryValue: TextStyle;
+  sectionTitle: TextStyle;
+  tipText: TextStyle;
+  impactText: TextStyle;
+  metricDetailLabel: TextStyle;
+  metricDetailValue: TextStyle;
+  tipIcon: TextStyle;
+}
+
 export default function DashboardScreen(): React.JSX.Element {
   // 🔥 USING ONLY REAL PERFORMANCE DATA - NO ARTIFICIAL NUMBERS
   const { metrics: realMetrics } = useContext(PerformanceContext);
   const analyticsReport = analytics.getReport();
 
-  // 📱 RESPONSIVE HOOK - Device-aware layouts and scaling
-  const responsive = useMobileResponsive();
+  // 📱 PIXEL-PERFECT HOOK - Device-aware layouts and scaling
+  const responsive = usePixelPerfect();
 
   // REAL-ONLY METRICS - No random numbers, no artificial data
   const [metrics] = useState<DashboardMetrics>(() => {
@@ -67,12 +104,12 @@ export default function DashboardScreen(): React.JSX.Element {
     value,
     color,
   }) => (
-    <View style={styles.metricCard}>
-      <View style={[styles.metricIcon, { backgroundColor: color + "20" }]}>
-        <Ionicons name={icon} size={responsive.scale.icon(32)} color={color} />
+    <View style={viewStyles.metricCard}>
+      <View style={[viewStyles.metricIcon, { backgroundColor: color + "20" }]}>
+        <Ionicons name={icon} size={responsive.scale.size(32)} color={color} />
       </View>
-      <Text style={styles.metricValue}>{value}</Text>
-      <Text style={styles.metricLabel}>{label}</Text>
+      <Text style={textStyles.metricValue}>{value}</Text>
+      <Text style={textStyles.metricLabel}>{label}</Text>
     </View>
   );
 
@@ -128,128 +165,110 @@ export default function DashboardScreen(): React.JSX.Element {
   }, [metrics.cacheHitRate, metrics.avgLoadTime, metrics.totalRequests]);
 
   const TipCard: React.FC<TipCardProps> = ({ icon, tip, impact }) => (
-    <View style={styles.tipCard}>
-      <Text style={styles.tipIcon}>{icon}</Text>
-      <View style={styles.tipContent}>
-        <Text style={styles.tipText}>{tip}</Text>
+    <View style={viewStyles.tipCard}>
+      <Text style={textStyles.tipIcon}>{icon}</Text>
+      <View style={viewStyles.tipContent}>
+        <Text style={textStyles.tipText}>{tip}</Text>
         <View
           style={[
-            styles.impactBadge,
-            impact === "High Impact" && styles.highImpact,
+            viewStyles.impactBadge,
+            impact === "High Impact" && viewStyles.highImpact,
           ]}
         >
-          <Text style={styles.impactText}>{impact}</Text>
+          <Text style={textStyles.impactText}>{impact}</Text>
         </View>
       </View>
     </View>
   );
 
-  // 📱 RESPONSIVE STYLES - Generated based on device type and scaling
+  // 📱 PIXEL-PERFECT STYLES - Generated based on device type and scaling
   const getResponsiveStyles = () => {
-    const { scale, layout, device, safe } = responsive;
-    
-    return StyleSheet.create({
+    const { scale, layout, device, screen, perfect } = responsive;
+    const isLandscape = device.orientation === "landscape";
+    const columnsNum = layout.columns(4); // Max 4 columns
+    const gridGap = scale.space(12);
+    const contentPadding = layout.container.padding;
+    const cardPadding = layout.card.padding;
+    const safeBottom = device.isNotched ? scale.space(10) : 0;
+
+    // Use perfect.flexGrid for metric cards
+    const metricGridConfig = perfect.flexGrid([1, 2, 3, 4], {
+      maxColumns: 4,
+      minItemWidth: scale.size(120),
+      gap: gridGap,
+      padding: contentPadding,
+    });
+
+    const viewStyles = StyleSheet.create({
       container: {
         flex: 1,
         backgroundColor: "#F5F5F5",
-        paddingTop: safe.top, // Safe area handling
-      } as ViewStyle,
+      },
       header: {
-        backgroundColor: "#fff",
-        padding: scale.space(20),
+        backgroundColor: "#f9f7f7",
+        padding: scale.space(40),
         flexDirection: "row",
         alignItems: "center",
         borderBottomWidth: 1,
         borderBottomColor: "#E0E0E0",
-      } as ViewStyle,
-      title: {
-        fontSize: scale.font(20),
-        fontWeight: "bold",
-        color: "#333",
-        marginLeft: scale.space(10),
-      } as TextStyle,
+      },
       dashboardGrid: {
         flexDirection: "row",
         flexWrap: "wrap",
-        padding: layout.contentPadding,
-        justifyContent: device.isLandscape ? "space-around" : "space-between",
-        gap: layout.gridGap, // Modern gap property for better spacing
-      } as ViewStyle,
+        padding: contentPadding,
+        justifyContent: isLandscape ? "space-around" : "space-between",
+        gap: gridGap,
+      },
       metricCard: {
         backgroundColor: "#fff",
-        width: device.isLandscape 
-          ? `${Math.floor(100 / Math.min(layout.columns, 4))}%`  // Max 4 columns in landscape
-          : "48%", // 2 columns in portrait for phones
-        padding: layout.cardPadding,
+        width: metricGridConfig.itemWidth, // Use calculated pixel-perfect width
+        padding: cardPadding,
         borderRadius: scale.radius(10),
         alignItems: "center",
-        marginBottom: layout.gridGap,
-        elevation: 2,
+        marginBottom: gridGap,
+        elevation: layout.card.elevation,
         shadowColor: "#000",
         shadowOffset: { width: 0, height: 2 },
         shadowOpacity: 0.1,
-        shadowRadius: 4,
-      } as ViewStyle,
+        shadowRadius: layout.card.shadowRadius,
+      },
       metricIcon: {
-        width: scale.icon(60),
-        height: scale.icon(60),
-        borderRadius: scale.icon(30),
+        width: scale.size(60),
+        height: scale.size(60),
+        borderRadius: scale.size(30),
         justifyContent: "center",
         alignItems: "center",
         marginBottom: scale.space(10),
-      } as ViewStyle,
-      metricValue: {
-        fontSize: scale.font(18),
-        fontWeight: "bold",
-        color: "#333",
-        marginBottom: scale.space(5),
-      } as TextStyle,
-      metricLabel: {
-        fontSize: scale.font(12),
-        color: "#666",
-        textAlign: "center",
-      } as TextStyle,
+      },
       chartSection: {
-        margin: layout.contentPadding,
+        margin: contentPadding,
         backgroundColor: "#fff",
         borderRadius: scale.radius(10),
         padding: scale.space(20),
-        elevation: 2,
+        elevation: layout.card.elevation,
         shadowColor: "#000",
         shadowOffset: { width: 0, height: 2 },
         shadowOpacity: 0.1,
-        shadowRadius: 4,
-      } as ViewStyle,
+        shadowRadius: layout.card.shadowRadius,
+      },
       chartPlaceholder: {
         alignItems: "center",
         paddingVertical: scale.space(40),
-      } as ViewStyle,
-      chartText: {
-        fontSize: scale.font(16),
-        color: "#666",
-        marginTop: scale.space(10),
-        fontWeight: "500",
-      } as TextStyle,
-      chartSubtext: {
-        fontSize: scale.font(12),
-        color: "#999",
-        marginTop: scale.space(5),
-        textAlign: "center",
-      } as TextStyle,
+      },
       summarySection: {
-        margin: layout.contentPadding,
+        margin: contentPadding,
         backgroundColor: "#fff",
         borderRadius: scale.radius(10),
         padding: scale.space(15),
-        elevation: 2,
+        elevation: layout.card.elevation,
         shadowColor: "#000",
         shadowOffset: { width: 0, height: 2 },
         shadowOpacity: 0.1,
-        shadowRadius: 4,
-      } as ViewStyle,
+        shadowRadius: layout.card.shadowRadius,
+      },
       summaryCard: {
         marginTop: scale.space(10),
-      } as ViewStyle,
+      },
       summaryRow: {
         flexDirection: "row",
         justifyContent: "space-between",
@@ -257,75 +276,48 @@ export default function DashboardScreen(): React.JSX.Element {
         paddingVertical: scale.space(8),
         borderBottomWidth: 1,
         borderBottomColor: "#F0F0F0",
-      } as ViewStyle,
-      summaryLabel: {
-        fontSize: scale.font(14),
-        color: "#666",
-        flex: 1, // Responsive text wrapping
-      } as TextStyle,
-      summaryValue: {
-        fontSize: scale.font(14),
-        fontWeight: "bold",
-        color: "#333",
-        textAlign: "right",
-      } as TextStyle,
-      sectionTitle: {
-        fontSize: scale.font(18),
-        fontWeight: "bold",
-        color: "#333",
-        marginBottom: scale.space(10),
-      } as TextStyle,
+      },
       tipsSection: {
-        margin: layout.contentPadding,
-        paddingBottom: safe.bottom, // Safe area at bottom
-      } as ViewStyle,
+        margin: contentPadding,
+        paddingBottom: safeBottom,
+      },
       tipCard: {
         flexDirection: "row",
         backgroundColor: "#fff",
         padding: scale.space(15),
         borderRadius: scale.radius(10),
         marginBottom: scale.space(10),
-        elevation: 2,
+        elevation: layout.card.elevation,
         shadowColor: "#000",
         shadowOffset: { width: 0, height: 2 },
         shadowOpacity: 0.1,
-        shadowRadius: 4,
-      } as ViewStyle,
+        shadowRadius: layout.card.shadowRadius,
+      },
       tipContent: {
         flex: 1,
         marginLeft: scale.space(15),
-      } as ViewStyle,
-      tipText: {
-        fontSize: scale.font(14),
-        color: "#333",
-        marginBottom: scale.space(8),
-      } as TextStyle,
+      },
       impactBadge: {
         alignSelf: "flex-start",
         backgroundColor: "#E0E0E0",
         paddingHorizontal: scale.space(8),
         paddingVertical: scale.space(2),
         borderRadius: scale.radius(12),
-      } as ViewStyle,
+      },
       highImpact: {
         backgroundColor: "#FFCDD2",
-      } as ViewStyle,
-      impactText: {
-        fontSize: scale.font(10),
-        fontWeight: "bold",
-        color: "#666",
-      } as TextStyle,
+      },
       metricsDetailSection: {
-        margin: layout.contentPadding,
+        margin: contentPadding,
         backgroundColor: "#fff",
         borderRadius: scale.radius(10),
         padding: scale.space(15),
-        elevation: 2,
+        elevation: layout.card.elevation,
         shadowColor: "#000",
         shadowOffset: { width: 0, height: 2 },
         shadowOpacity: 0.1,
-        shadowRadius: 4,
-      } as ViewStyle,
+        shadowRadius: layout.card.shadowRadius,
+      },
       metricsDetail: {
         flexDirection: "row",
         justifyContent: "space-between",
@@ -333,40 +325,101 @@ export default function DashboardScreen(): React.JSX.Element {
         paddingVertical: scale.space(8),
         borderBottomWidth: 1,
         borderBottomColor: "#F0F0F0",
-      } as ViewStyle,
+      },
+    });
+
+    const textStyles = StyleSheet.create({
+      title: {
+        fontSize: scale.font(20),
+        fontWeight: "bold",
+        color: "#333",
+        marginLeft: scale.space(10),
+      },
+      metricValue: {
+        fontSize: scale.font(18),
+        fontWeight: "bold",
+        color: "#333",
+        marginBottom: scale.space(5),
+      },
+      metricLabel: {
+        fontSize: scale.font(12),
+        color: "#666",
+        textAlign: "center",
+      },
+      chartText: {
+        fontSize: scale.font(16),
+        color: "#666",
+        marginTop: scale.space(10),
+        fontWeight: "500",
+      },
+      chartSubtext: {
+        fontSize: scale.font(12),
+        color: "#999",
+        marginTop: scale.space(5),
+        textAlign: "center",
+      },
+      summaryLabel: {
+        fontSize: scale.font(14),
+        color: "#666",
+        flex: 1,
+      },
+      summaryValue: {
+        fontSize: scale.font(14),
+        fontWeight: "bold",
+        color: "#333",
+        textAlign: "right",
+      },
+      sectionTitle: {
+        fontSize: scale.font(18),
+        fontWeight: "bold",
+        color: "#333",
+        marginBottom: scale.space(10),
+      },
+      tipText: {
+        fontSize: scale.font(14),
+        color: "#333",
+        marginBottom: scale.space(8),
+      },
+      impactText: {
+        fontSize: scale.font(10),
+        fontWeight: "bold",
+        color: "#666",
+      },
       metricDetailLabel: {
         fontSize: scale.font(14),
         color: "#666",
         flex: 1,
-      } as TextStyle,
+      },
       metricDetailValue: {
         fontSize: scale.font(14),
         fontWeight: "bold",
         color: "#2196F3",
         textAlign: "right",
-      } as TextStyle,
+      },
       tipIcon: {
         fontSize: scale.font(24),
         minWidth: scale.space(30),
         textAlign: "center",
-      } as TextStyle,
+      },
     });
+
+    return { viewStyles, textStyles };
   };
 
-  const styles = getResponsiveStyles();
+  const { viewStyles, textStyles } = getResponsiveStyles();
 
   return (
-    <ScrollView style={styles.container}>
-      <View style={styles.header}>
+    <ScrollView style={viewStyles.container}>
+      <View style={viewStyles.header}>
         <Ionicons
           name="stats-chart"
-          size={responsive.scale.icon(30)}
+          size={responsive.scale.size(30)}
           color="#2196F3"
         />
-        <Text style={styles.title}>Performance Dashboard</Text>
+        <Text style={textStyles.title}>Performance Dashboard</Text>
       </View>
 
-      <View style={styles.dashboardGrid}>
+      <View style={viewStyles.dashboardGrid}>
         <MetricCard
           icon="download"
           label="Total Requests"
@@ -393,28 +446,30 @@ export default function DashboardScreen(): React.JSX.Element {
         />
       </View>
 
-      <View style={styles.chartSection}>
-        <Text style={styles.sectionTitle}>Cache Performance</Text>
-        <View style={styles.chartPlaceholder}>
+      <View style={viewStyles.chartSection}>
+        <Text style={textStyles.sectionTitle}>Cache Performance</Text>
+        <View style={viewStyles.chartPlaceholder}>
           <Ionicons
             name="bar-chart"
-            size={responsive.scale.icon(80)}
+            size={responsive.scale.size(80)}
             color="#E0E0E0"
           />
-          <Text style={styles.chartText}>Performance chart visualization</Text>
-          <Text style={styles.chartSubtext}>
+          <Text style={textStyles.chartText}>
+            Performance chart visualization
+          </Text>
+          <Text style={textStyles.chartSubtext}>
             Shows cache hit rates, load times, and optimization trends over time
           </Text>
         </View>
       </View>
 
-      <View style={styles.summarySection}>
-        <Text style={styles.sectionTitle}>Performance Summary</Text>
+      <View style={viewStyles.summarySection}>
+        <Text style={textStyles.sectionTitle}>Performance Summary</Text>
 
-        <View style={styles.summaryCard}>
-          <View style={styles.summaryRow}>
-            <Text style={styles.summaryLabel}>Network Requests Saved:</Text>
-            <Text style={styles.summaryValue}>
+        <View style={viewStyles.summaryCard}>
+          <View style={viewStyles.summaryRow}>
+            <Text style={textStyles.summaryLabel}>Network Requests Saved:</Text>
+            <Text style={textStyles.summaryValue}>
               {metrics.totalRequests > 0
                 ? Math.round(
                     metrics.totalRequests * (metrics.cacheHitRate / 100)
@@ -423,9 +478,9 @@ export default function DashboardScreen(): React.JSX.Element {
             </Text>
           </View>
 
-          <View style={styles.summaryRow}>
-            <Text style={styles.summaryLabel}>Time Saved:</Text>
-            <Text style={styles.summaryValue}>
+          <View style={viewStyles.summaryRow}>
+            <Text style={textStyles.summaryLabel}>Time Saved:</Text>
+            <Text style={textStyles.summaryValue}>
               {metrics.totalRequests > 0
                 ? `~${Math.round(
                     (metrics.avgLoadTime *
@@ -437,9 +492,9 @@ export default function DashboardScreen(): React.JSX.Element {
             </Text>
           </View>
 
-          <View style={styles.summaryRow}>
-            <Text style={styles.summaryLabel}>Data Saved:</Text>
-            <Text style={styles.summaryValue}>
+          <View style={viewStyles.summaryRow}>
+            <Text style={textStyles.summaryLabel}>Data Saved:</Text>
+            <Text style={textStyles.summaryValue}>
               {metrics.totalRequests > 0
                 ? `~${Math.round(metrics.totalRequests * 0.01)}MB`
                 : "Use app to see data"}
@@ -448,8 +503,8 @@ export default function DashboardScreen(): React.JSX.Element {
         </View>
       </View>
 
-      <View style={styles.tipsSection}>
-        <Text style={styles.sectionTitle}>Optimization Tips</Text>
+      <View style={viewStyles.tipsSection}>
+        <Text style={textStyles.sectionTitle}>Optimization Tips</Text>
 
         {dynamicTips.map((tipItem, index) => (
           <TipCard
@@ -461,19 +516,21 @@ export default function DashboardScreen(): React.JSX.Element {
         ))}
       </View>
 
-      <View style={styles.metricsDetailSection}>
-        <Text style={styles.sectionTitle}>Detailed Metrics</Text>
+      <View style={viewStyles.metricsDetailSection}>
+        <Text style={textStyles.sectionTitle}>Detailed Metrics</Text>
 
-        <View style={styles.metricsDetail}>
-          <Text style={styles.metricDetailLabel}>
+        <View style={viewStyles.metricsDetail}>
+          <Text style={textStyles.metricDetailLabel}>
             Average Screen Load Time:
           </Text>
-          <Text style={styles.metricDetailValue}>{metrics.avgLoadTime}ms</Text>
+          <Text style={textStyles.metricDetailValue}>
+            {metrics.avgLoadTime}ms
+          </Text>
         </View>
 
-        <View style={styles.metricsDetail}>
-          <Text style={styles.metricDetailLabel}>Cache Efficiency:</Text>
-          <Text style={styles.metricDetailValue}>
+        <View style={viewStyles.metricsDetail}>
+          <Text style={textStyles.metricDetailLabel}>Cache Efficiency:</Text>
+          <Text style={textStyles.metricDetailValue}>
             {metrics.cacheHitRate > 80
               ? "Excellent"
               : metrics.cacheHitRate > 60
@@ -482,9 +539,9 @@ export default function DashboardScreen(): React.JSX.Element {
           </Text>
         </View>
 
-        <View style={styles.metricsDetail}>
-          <Text style={styles.metricDetailLabel}>Performance Score:</Text>
-          <Text style={styles.metricDetailValue}>
+        <View style={viewStyles.metricsDetail}>
+          <Text style={textStyles.metricDetailLabel}>Performance Score:</Text>
+          <Text style={textStyles.metricDetailValue}>
             {Math.round(
               (metrics.cacheHitRate + (100 - metrics.avgLoadTime / 10)) / 2
             )}
