@@ -9,8 +9,10 @@ import {
   View,
   ViewStyle,
 } from "react-native";
+
+// useMobileResponsive;
 import { PerformanceContext } from "../contexts/PerformanceContext";
-import { usePixelPerfect } from "../hooks/useMobileResponsive";
+import { usePixelPerfect } from "../hooks/usePixcelperfect";
 import { analytics } from "../utils/analytics";
 
 interface DashboardMetrics {

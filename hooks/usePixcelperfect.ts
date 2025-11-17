@@ -150,12 +150,12 @@ export const usePixelPerfect = (): PixelPerfectHook => {
 
   // Device type detection with precise breakpoints
   const getDeviceType = useCallback((): DeviceType => {
-    if (width <= 375) return "small-phone"; // iPhone SE, small Androids
-    if (width <= 414) return "phone"; // iPhone 12/13/14
-    if (width <= 480) return "large-phone"; // iPhone 14 Plus, large Androids
-    if (width <= 768) return "small-tablet"; // iPad Mini
-    if (width <= 1024) return "tablet"; // iPad Air/Pro 11"
-    if (width >= 1024) return "large-tablet"; // iPad Pro 12.9"
+    if (width <= 375) return "small-phone";
+    if (width <= 414) return "phone";
+    if (width <= 480) return "large-phone";
+    if (width <= 768) return "small-tablet";
+    if (width <= 1024) return "tablet";
+    if (width >= 1024) return "large-tablet";
 
     // Foldable detection (unfolded state)
     if (width > 600 && height > 800 && !isLandscape && aspectRatio > 0.7) {

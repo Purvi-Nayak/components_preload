@@ -5,7 +5,7 @@ import {
   PerformanceContext,
   PreloadStatus,
 } from "../contexts/PerformanceContext";
-import { usePixelPerfect } from "../hooks/useMobileResponsive";
+import { usePixelPerfect } from "../hooks/usePixcelperfect";
 
 interface MetricCardProps {
   icon: keyof typeof Ionicons.glyphMap;
