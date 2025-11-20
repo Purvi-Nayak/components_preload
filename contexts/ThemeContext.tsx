@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState } from "react";
 import { useColorScheme } from "react-native";
-import { Colors } from '../constants/theme';
+import { Colors } from "../constants/theme";
 
 // Theme definitions
 export interface Theme {
@@ -156,14 +156,18 @@ export const useThemeColor = (
   colorName: keyof typeof Colors.light
 ) => {
   const { isDark } = useTheme();
-  const colorFromProps = props[isDark ? 'dark' : 'light'];
-  
+  const colorFromProps = props[isDark ? "dark" : "light"];
+
   if (colorFromProps) {
     return colorFromProps;
   } else {
     // Fallback to basic Colors mapping for common color names
-    const colorMap: Record<string, string> = isDark ? Colors.dark : Colors.light;
-    return colorMap[colorName] || (isDark ? Colors.dark.text : Colors.light.text);
+    const colorMap: Record<string, string> = isDark
+      ? Colors.dark
+      : Colors.light;
+    return (
+      colorMap[colorName] || (isDark ? Colors.dark.text : Colors.light.text)
+    );
   }
 };
 
