@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState } from "react";
 import { useColorScheme } from "react-native";
+import { Colors } from '../constants/theme';
 
 // Theme definitions
 export interface Theme {
@@ -147,6 +148,23 @@ export const useThemeColors = () => {
 export const useIsDark = () => {
   const { isDark } = useTheme();
   return isDark;
+};
+
+// Theme color hook for conditional light/dark colors
+export const useThemeColor = (
+  props: { light?: string; dark?: string },
+  colorName: keyof typeof Colors.light
+) => {
+  const { isDark } = useTheme();
+  const colorFromProps = props[isDark ? 'dark' : 'light'];
+  
+  if (colorFromProps) {
+    return colorFromProps;
+  } else {
+    // Fallback to basic Colors mapping for common color names
+    const colorMap: Record<string, string> = isDark ? Colors.dark : Colors.light;
+    return colorMap[colorName] || (isDark ? Colors.dark.text : Colors.light.text);
+  }
 };
 
 // Status bar hook - this will be used in your StatusBar component

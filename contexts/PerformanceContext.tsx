@@ -1,6 +1,6 @@
 import { createContext } from "react";
 
-// Types
+// Types add for 13 inch ipad Pro or ipad screen
 export type PreloadStatus = "pending" | "loading" | "loaded" | "failed";
 
 export interface PreloadStatusState {
