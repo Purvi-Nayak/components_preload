@@ -61,11 +61,11 @@ export default function HomeScreen(): React.JSX.Element {
       },
       header: {
         backgroundColor: "#fef8f8",
-        padding: scale.space(30),
+        padding: scale.space(40),
         alignItems: "center",
         borderBottomWidth: 1,
         borderBottomColor: "#E0E0E0",
-        marginBottom: scale.space(20),
+        // marginBottom: scale.space(20),
       },
       section: {
         marginBottom: scale.space(20),
